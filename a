@@ -1,0 +1,275 @@
+[33mcommit ae475f2c5cb0f5cea9acdc8aa9570001b2a8beb8[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m
+Author: arya <arya.prakyath@gmail.com>
+Date:   Wed Sep 16 18:08:13 2020 +0530
+
+    Added openFile Option
+
+[1mdiff --git a/codeEditor.py b/codeEditor.py[m
+[1mindex 4a1bcfd..6ac9a37 100644[m
+[1m--- a/codeEditor.py[m
+[1m+++ b/codeEditor.py[m
+[36m@@ -1,13 +1,14 @@[m
+ import os[m
+ from tkinter import *[m
+ from tkinter import messagebox, filedialog[m
+[32m+[m[32mimport json[m
+ [m
+[31m-#Globals[m
+[31m-indexCount = 0.0[m
+[32m+[m[32m# Globals[m
+ [m
+ # Initial window setup[m
+ root = Tk()[m
+[31m-root.geometry('1200x750+200+30')[m
+[32m+[m[32m# root.geometry('1200x750+200+30')[m
+[32m+[m[32mroot.geometry('500x500')[m
+ root.resizable(True, True)[m
+ root.title('   codeEditor | THE_ARYA')[m
+ icon = PhotoImage(file="codeEditorIcon.png")[m
+[36m@@ -18,30 +19,79 @@[m [mroot['bg'] = 'black'[m
+ def openFile():[m
+     filePtr = filedialog.askopenfile(mode='r', filetypes=[('All Files', '*.*')], initialdir=os.getcwd(), title="Open a file to edit | THE_ARYA")[m
+     if filePtr:[m
+[31m-        root.title = os.getcwd()[m
+[32m+[m[32m        index = 1[m
+[32m+[m[32m        name = filePtr.name.split("/")[-1][m
+[32m+[m[32m        type = name.split(".")[1][m
+[32m+[m[32m        root.title("  "+name)[m
+         editBox.delete(0.0, END)[m
+[32m+[m
+[32m+[m[32m        # Get the keyword list[m
+[32m+[m[32m        with open("keyWordsList.json", "r") as keyJson:[m
+[32m+[m[32m            jsonList = keyJson.read()[m
+[32m+[m[32m            jsonList = json.loads(jsonList)[m
+[32m+[m[32m            keyWords = jsonList[type]["keywords"][m
+[32m+[m[32m            commentLine = jsonList[type]["comments"][m
+[32m+[m[32m            keyJson.close()[m
+[32m+[m
+[32m+[m[32m        # Access line one at a time[m
+         for line in filePtr.readlines():[m
+[32m+[m[32m            print(line.split())[m
+             editBox.insert(END, line)[m
+[32m+[m
+[32m+[m[32m            # Check if line is a comment[m
+[32m+[m[32m            line = line.lstrip()[m
+[32m+[m[32m            try:[m
+[32m+[m[32m                if line[0] in commentLine:[m
+[32m+[m[32m                    editBox.tag_configure("comments", foreground="green")[m
+[32m+[m[32m                    editBox.tag_add("comments", index+0.0, CURRENT)[m
+[32m+[m[32m            except Exception as e:[m
+[32m+[m[32m                pass[m
+[32m+[m
+[32m+[m[32m            # Check for keywords[m
+[32m+[m[32m            i = 0[m
+[32m+[m[32m            # print(f"Line {k} : {len(line)}")[m
+[32m+[m[32m            while i < len(line):[m
+[32m+[m[32m                j = i[m
+[32m+[m[32m                while j < len(line):[m
+[32m+[m[32m                    if line[j] != " " or line[j] == "\t":[m
+[32m+[m[32m                        j += 1[m
+[32m+[m[32m                    elif line[j] == " " and line[j]:[m
+[32m+[m[32m                        break[m
+[32m+[m[32m                    else:[m
+[32m+[m[32m                        j += 1[m
+[32m+[m
+[32m+[m[32m                start = index + float('0.'+str(i))[m
+[32m+[m[32m                end = index + float('0.'+str(j))[m
+[32m+[m
+[32m+[m[32m                word = editBox.get(start, end)[m
+[32m+[m[32m                if word in keyWords:[m
+[32m+[m[32m                    editBox.tag_configure("keyword", foreground="yellow")[m
+[32m+[m[32m                    editBox.tag_add("keyword", start, end)[m
+[32m+[m[32m                i = j + 1[m
+[32m+[m
+[32m+[m[32m            index += 1[m
+         filePtr.close()[m
+ [m
+[32m+[m
+[32m+[m
+[32m+[m
+ def saveFile():[m
+     pass[m
+[32m+[m
+ def saveAsFile():[m
+     pass[m
+[32m+[m
+[32m+[m[32mdef themeSet(theme):[m
+[32m+[m[32m    pass[m
+[32m+[m
+ def aboutApp():[m
+     messagebox.showinfo("codeEditor | THE_ARYA\n", "This is a code Editor that supports Text, "[m
+                                                    "Python, C, HTML, CSS, JavaScript, Php, Java, "[m
+[31m-                                                   "C++ files\n\n NO ERROR DETECTION")[m
+[31m-[m
+[31m-def indexer(keyType):[m
+[31m-    global indexCount[m
+[31m-    if keyType == 'key':[m
+[31m-        indexCount += 0.1[m
+[31m-    else:[m
+[31m-        indexCount += 1.0[m
+[32m+[m[32m                                                   "C++ files\n\n NO ERROR DETECTION SUPPORT")[m
+ [m
+ def editting(event):[m
+     pass[m
+[32m+[m
+ # Menu[m
+ menu = Menu(root)[m
+ [m
+[36m@@ -55,6 +105,15 @@[m [mfile['fg'] = 'white'[m
+ file['activebackground'] = 'yellow'[m
+ file['activeforeground'] = 'black'[m
+ [m
+[32m+[m[32mtheme = Menu(menu, tearoff=False)[m
+[32m+[m[32mtheme.add_radiobutton(label="Dark", variable='theme', value='dark', command=lambda :themeSet('dark'))[m
+[32m+[m[32mtheme.add_radiobutton(label="light", variable='theme', value='light', command=lambda :themeSet('light'))[m
+[32m+[m[32mmenu.add_cascade(label="Theme", menu=theme)[m
+[32m+[m[32mtheme['bg'] = 'black'[m
+[32m+[m[32mtheme['fg'] = 'white'[m
+[32m+[m[32mtheme['activebackground'] = 'yellow'[m
+[32m+[m[32mtheme['activeforeground'] = 'black'[m
+[32m+[m
+ about = Menu(menu, tearoff=False)[m
+ about.add_command(label="About App", command=aboutApp)[m
+ menu.add_cascade(label="About", menu=about)[m
+[36m@@ -65,8 +124,8 @@[m [mabout['activeforeground'] = 'black'[m
+ root.config(menu=menu)[m
+ [m
+ #Editor Box[m
+[31m-editBox = Text(root, height=20, width=90, font=("lucida", 18), spacing1=15)[m
+[31m-editBox.pack()[m
+[32m+[m[32meditBox = Text(root, font=("lucida", 18), spacing1=15)[m
+[32m+[m[32meditBox.pack(fill=BOTH, expand=True)[m
+ editBox['bg'] = 'black'[m
+ editBox['fg'] = 'white'[m
+ editBox['insertbackground'] = 'white'[m
+[1mdiff --git a/keyWordsList.json b/keyWordsList.json[m
+[1mnew file mode 100644[m
+[1mindex 0000000..6399b88[m
+[1m--- /dev/null[m
+[1m+++ b/keyWordsList.json[m
+[36m@@ -0,0 +1,23 @@[m
+[32m+[m[32m{[m
+[32m+[m[32m      "c" : {"keywords":["auto", "break", "case", "char", "const", "continue", "default", "do", "double", "else", "enum", "extern", "float", "for", "goto",	"if", "int", "long", "register", "return", "short", "signed", "sizeof", "static", "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while", "printf", "scanf"], "comments": ["//", "#"]},[m
+[32m+[m
+[32m+[m[32m      "py" : {"keywords": ["from", "import", "with", "as" , "global", "nonlocal", "True", "False", "None", "and", "or", "not", "in", "is", "if", "else", "elif", "for", "while", "break", "continue", "def", "lambda", "return", "try", "catch", "Exception", "finally", "raise", "class", "yield", "pass","assert", "await", "async", "print", "input", "int", "str", "list", "dict", "float"], "comments": ["#", "'"]},[m
+[32m+[m
+[32m+[m[32m      "txt" : {"keywords": [], "comments": []},[m
+[32m+[m
+[32m+[m[32m      "html" : {"keywords": [], "comments": ["<!--"]},[m
+[32m+[m
+[32m+[m[32m      "css" : {"keywords": [], "comments": ["//"]},[m
+[32m+[m
+[32m+[m[32m      "php" : {"keywords": [], "comments": ["//"]},[m
+[32m+[m
+[32m+[m[32m      "js" : {"keywords": [], "comments": ["//"]}[m
+[32m+[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m
+
+[33mcommit 00f9c49111c8a324134962e9fe6ed93be49336a2[m
+Author: arya <arya.prakyath@gmail.com>
+Date:   Tue Sep 15 23:52:58 2020 +0530
+
+    DONE
+
+[1mdiff --git a/codeEditor.py b/codeEditor.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..4a1bcfd[m
+[1m--- /dev/null[m
+[1m+++ b/codeEditor.py[m
+[36m@@ -0,0 +1,85 @@[m
+[32m+[m[32mimport os[m
+[32m+[m[32mfrom tkinter import *[m
+[32m+[m[32mfrom tkinter import messagebox, filedialog[m
+[32m+[m
+[32m+[m[32m#Globals[m
+[32m+[m[32mindexCount = 0.0[m
+[32m+[m
+[32m+[m[32m# Initial window setup[m
+[32m+[m[32mroot = Tk()[m
+[32m+[m[32mroot.geometry('1200x750+200+30')[m
+[32m+[m[32mroot.resizable(True, True)[m
+[32m+[m[32mroot.title('   codeEditor | THE_ARYA')[m
+[32m+[m[32micon = PhotoImage(file="codeEditorIcon.png")[m
+[32m+[m[32mroot.iconphoto(False, icon)[m
+[32m+[m[32mroot['bg'] = 'black'[m
+[32m+[m
+[32m+[m[32m# Menu Functions[m
+[32m+[m[32mdef openFile():[m
+[32m+[m[32m    filePtr = filedialog.askopenfile(mode='r', filetypes=[('All Files', '*.*')], initialdir=os.getcwd(), title="Open a file to edit | THE_ARYA")[m
+[32m+[m[32m    if filePtr:[m
+[32m+[m[32m        root.title = os.getcwd()[m
+[32m+[m[32m        editBox.delete(0.0, END)[m
+[32m+[m[32m        for line in filePtr.readlines():[m
+[32m+[m[32m            editBox.insert(END, line)[m
+[32m+[m[32m        filePtr.close()[m
+[32m+[m
+[32m+[m[32mdef saveFile():[m
+[32m+[m[32m    pass[m
+[32m+[m[32mdef saveAsFile():[m
+[32m+[m[32m    pass[m
+[32m+[m[32mdef aboutApp():[m
+[32m+[m[32m    messagebox.showinfo("codeEditor | THE_ARYA\n", "This is a code Editor that supports Text, "[m
+[32m+[m[32m                                                   "Python, C, HTML, CSS, JavaScript, Php, Java, "[m
+[32m+[m[32m                                                   "C++ files\n\n NO ERROR DETECTION")[m
+[32m+[m
+[32m+[m[32mdef indexer(keyType):[m
+[32m+[m[32m    global indexCount[m
+[32m+[m[32m    if keyType == 'key':[m
+[32m+[m[32m        indexCount += 0.1[m
+[32m+[m[32m    else:[m
+[32m+[m[32m        indexCount += 1.0[m
+[32m+[m
+[32m+[m[32mdef editting(event):[m
+[32m+[m[32m    pass[m
+[32m+[m[32m# Menu[m
+[32m+[m[32mmenu = Menu(root)[m
+[32m+[m
+[32m+[m[32mfile = Menu(menu, tearoff=False)[m
+[32m+[m[32mfile.add_command(label="Open", command=openFile)[m
+[32m+[m[32mfile.add_command(label="Save", command=saveFile)[m
+[32m+[m[32mfile.add_command(label="Save As", command=saveAsFile)[m
+[32m+[m[32mmenu.add_cascade(label="File", menu=file)[m
+[32m+[m[32mfile['bg'] = 'black'[m
+[32m+[m[32mfile['fg'] = 'white'[m
+[32m+[m[32mfile['activebackground'] = 'yellow'[m
+[32m+[m[32mfile['activeforeground'] = 'black'[m
+[32m+[m
+[32m+[m[32mabout = Menu(menu, tearoff=False)[m
+[32m+[m[32mabout.add_command(label="About App", command=aboutApp)[m
+[32m+[m[32mmenu.add_cascade(label="About", menu=about)[m
+[32m+[m[32mabout['bg'] = 'black'[m
+[32m+[m[32mabout['fg'] = 'white'[m
+[32m+[m[32mabout['activebackground'] = 'yellow'[m
+[32m+[m[32mabout['activeforeground'] = 'black'[m
+[32m+[m[32mroot.config(menu=menu)[m
+[32m+[m
+[32m+[m[32m#Editor Box[m
+[32m+[m[32meditBox = Text(root, height=20, width=90, font=("lucida", 18), spacing1=15)[m
+[32m+[m[32meditBox.pack()[m
+[32m+[m[32meditBox['bg'] = 'black'[m
+[32m+[m[32meditBox['fg'] = 'white'[m
+[32m+[m[32meditBox['insertbackground'] = 'white'[m
+[32m+[m
+[32m+[m[32m# editBox.bind("<Return>", lambda event: indexer('enter'))[m
+[32m+[m[32m# editBox.bind("<space>", editting)[m
+[32m+[m[32meditBox.bind("<Key>", editting)[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m[32mroot.mainloop()[m
+[32m+[m
+[1mdiff --git a/codeEditorIcon.png b/codeEditorIcon.png[m
+[1mnew file mode 100644[m
+[1mindex 0000000..1bd04ac[m
+Binary files /dev/null and b/codeEditorIcon.png differ
