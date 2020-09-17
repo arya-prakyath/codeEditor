@@ -2,7 +2,6 @@ import os
 from tkinter import *
 from tkinter import messagebox, filedialog
 import json
-import string
 
 # Globals
 paranthesis = ['(', ')', '{', '}', '[', ']', '<', '>']
@@ -26,7 +25,7 @@ def openFile():
             jsonList = json.loads(jsonList)
             keyWords = jsonList[type]["keywords"]
             commentLine = jsonList[type]["comments"]
-            keyJson.close()
+        keyJson.close()
 
         # Access line... one at a time
         for line in filePtr.readlines():
@@ -35,34 +34,14 @@ def openFile():
             # editor()
 
             # Check if line is a comment
-            strippedLine = line.lstrip()
-            # print(line)
             try:
-                if strippedLine[0] in commentLine:
+                if line.lstrip()[0] in commentLine:
                     editBox.tag_configure("comments", foreground="#EC8B5E")
                     editBox.tag_add("comments", index + 0.0, "current")
                     index += 1
                     continue
-            except Exception as e:
+            except Exception:
                 pass
-
-            # Check for string
-            i = 0
-            while i < len(line):
-                if line[i] == '"':
-                    j = i + 1
-                    while j < len(line)-1 and line[j] != '"':
-                        j += 1
-                    if line[j] == '"':
-                        start = index + float('0.' + str(i))
-                        end = index + float('0.' + str(j+1))
-                        editBox.tag_configure("string", foreground="green")
-                        editBox.tag_add("string", start, end)
-                        i = j + 1
-                    else:
-                        i += 1
-                else:
-                    i += 1
 
             # Check for functions
             i = 0
@@ -80,25 +59,20 @@ def openFile():
                 i += 1
 
             # Check for keywords
-            i = 0
-            while i < len(line) and (line[i] == " " or line[i] == "\t"):
-                i += 1
-            while i < len(line):
-                j = i
-                while j < len(line) and line[j].isalnum():
-                    j += 1
-                start = index + float('0.' + str(i))
-                end = index + float('0.' + str(j))
-                word = editBox.get(start, end)
-                if word in keyWords:
+            for key in keyWords:
+                i = index + 0.0
+                start = editBox.search(f'{key}[\s|:|\\n]', index=i, regexp=True, forwards=True, stopindex=END)
+                if start != "":
+                    word = editBox.get(start, start + " wordend")
+                    startDeci = start.split('.')[-1]
+                    start = float(start)
+                    end = int(start) + float("0."+str(int(startDeci) + len(word)))
                     editBox.tag_configure("keyword", foreground="#2F3C7E")
-                    editBox.tag_remove("string", start, end)
-                    editBox.tag_remove("functions", start, end)
-                    editBox.tag_add("keyword", start, end)
-                i = j + 1
+                    editBox.tag_remove("string", str(start), format(end, '.2f'))
+                    editBox.tag_remove("functions", str(start), format(end, '.2f'))
+                    editBox.tag_add("keyword", str(start), float(format(end, '.2f')))
 
             index += 1
-
         filePtr.close()
 
 
@@ -130,8 +104,8 @@ def editting(event):
 if __name__ == '__main__':
     # Initial window setup
     root = Tk()
-    # root.geometry('1200x750+200+30')
-    root.geometry('500x500')
+    root.geometry('1200x750+200+30')
+    # root.geometry('500x500')
     root.resizable(True, True)
     root.title('   codeEditor | THE_ARYA')
     icon = PhotoImage(file="codeEditorIcon.png")
@@ -170,18 +144,21 @@ if __name__ == '__main__':
     root.config(menu=menu)
 
     # Scrollbar
-    scroll = Scrollbar(root)
-    scroll.pack(side="right", fill=Y)
+    scrolly = Scrollbar(root, orient=VERTICAL)
+    scrolly.pack(side="right", fill=Y)
+    scrollx = Scrollbar(root, orient=HORIZONTAL)
+    scrollx.pack(side="bottom", fill=X)
 
     #Editor Box
-    editBox = Text(root, font=("lucida", 18), spacing1=15, relief="solid", yscrollcommand=scroll.set)
-    editBox.pack(fill=BOTH, padx=(18, 5), ipadx=15)
+    editBox = Text(root, font=("lucida", 18), spacing1=15, relief="solid", yscrollcommand=scrolly.set, xscrollcommand=scrollx.set)
+    editBox.pack(fill=BOTH, expand=True, padx=(18, 0), ipadx=15)
     editBox['bg'] = '#161B21'
     editBox['fg'] = '#FFFFFF'
     editBox['insertbackground'] = 'white'
     editBox.bind("<Key>", editting)
     # Add scroll command
-    scroll.configure(command=editBox.yview)
+    scrolly.configure(command=editBox.yview)
+    scrollx.configure(command=editBox.xview)
 
     # openFile()
 
