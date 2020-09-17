@@ -2,15 +2,17 @@ import os
 from tkinter import *
 from tkinter import messagebox, filedialog
 import json
+import string
 
 # Globals
+paranthesis = ['(', ')', '{', '}', '[', ']', '<', '>']
 
 def editor():
     pass
 
 # Menu Functions
 def openFile():
-    filePtr = filedialog.askopenfile(mode='r', filetypes=[('All Files', '*.*')], initialdir=os.getcwd(), title="Open a file to edit | THE_ARYA")
+    filePtr = filedialog.askopenfile(mode='r', filetypes=[('All Files', '*.*')], initialdir=os.getcwd(), title="Open a file | THE_ARYA")
     if filePtr:
         index = 1
         name = filePtr.name.split("/")[-1]
@@ -26,41 +28,77 @@ def openFile():
             commentLine = jsonList[type]["comments"]
             keyJson.close()
 
-        # Access line one at a time
+        # Access line... one at a time
         for line in filePtr.readlines():
-            print(line)
             editBox.insert(END, line)
             # Call editor
             # editor()
+
             # Check if line is a comment
             strippedLine = line.lstrip()
+            # print(line)
             try:
                 if strippedLine[0] in commentLine:
-                    editBox.tag_configure("comments", foreground="green")
-                    editBox.tag_add("comments", index + 0.0, CURRENT)
-            except Exception:
+                    editBox.tag_configure("comments", foreground="#EC8B5E")
+                    editBox.tag_add("comments", index + 0.0, "current")
+                    index += 1
+                    continue
+            except Exception as e:
                 pass
+
+            # Check for string
+            i = 0
+            while i < len(line):
+                if line[i] == '"':
+                    j = i + 1
+                    while j < len(line)-1 and line[j] != '"':
+                        j += 1
+                    if line[j] == '"':
+                        start = index + float('0.' + str(i))
+                        end = index + float('0.' + str(j+1))
+                        editBox.tag_configure("string", foreground="green")
+                        editBox.tag_add("string", start, end)
+                        i = j + 1
+                    else:
+                        i += 1
+                else:
+                    i += 1
+
+            # Check for functions
+            i = 0
+            while i < len(line):
+                if line[i] == '(':
+                    if line[i-1].isalnum() or line[i-1] == "_":
+                        j = i - 1
+                        while (line[j].isalnum() or line[j] == "_" or line[j] == ".") and j >= 0:
+                            j -= 1
+                        start = index + float('0.' + str(j+1))
+                        end = index + float('0.' + str(i))
+                        editBox.tag_configure("functions", foreground="yellow")
+                        editBox.tag_remove("string", start, end)
+                        editBox.tag_add("functions", start, end)
+                i += 1
 
             # Check for keywords
             i = 0
             while i < len(line) and (line[i] == " " or line[i] == "\t"):
                 i += 1
-
-            # print(f"Line {k} : {len(line)}")
             while i < len(line):
                 j = i
                 while j < len(line) and line[j].isalnum():
                     j += 1
-
                 start = index + float('0.' + str(i))
                 end = index + float('0.' + str(j))
-
                 word = editBox.get(start, end)
                 if word in keyWords:
-                    editBox.tag_configure("keyword", foreground="yellow")
+                    editBox.tag_configure("keyword", foreground="#2F3C7E")
+                    editBox.tag_remove("string", start, end)
+                    editBox.tag_remove("functions", start, end)
                     editBox.tag_add("keyword", start, end)
                 i = j + 1
+
             index += 1
+
         filePtr.close()
 
 
@@ -71,7 +109,14 @@ def saveAsFile():
     pass
 
 def themeSet(theme):
-    pass
+    if theme == "light":
+        editBox['bg'] = '#AA96DA'
+        editBox['fg'] = 'black'
+        editBox['insertbackground'] = 'black'
+    else:
+        editBox['bg'] = '#161B21'
+        editBox['fg'] = 'white'
+        editBox['insertbackground'] = 'white'
 
 def aboutApp():
     messagebox.showinfo("codeEditor | THE_ARYA\n", "This is a code Editor that supports Text, "
@@ -91,7 +136,7 @@ if __name__ == '__main__':
     root.title('   codeEditor | THE_ARYA')
     icon = PhotoImage(file="codeEditorIcon.png")
     root.iconphoto(False, icon)
-    root['bg'] = 'black'
+    root['bg'] = '#161B21'
 
     # Menu
     menu = Menu(root)
@@ -107,8 +152,8 @@ if __name__ == '__main__':
     file['activeforeground'] = 'black'
 
     theme = Menu(menu, tearoff=False)
-    theme.add_radiobutton(label="Dark", variable='theme', value='dark', command=lambda :themeSet('dark'))
-    theme.add_radiobutton(label="light", variable='theme', value='light', command=lambda :themeSet('light'))
+    theme.add_radiobutton(label="Dark", selectcolor="blue", variable='theme', value='dark', command=lambda :themeSet('dark'))
+    theme.add_radiobutton(label="light", selectcolor="blue", variable='theme', value='light', command=lambda :themeSet('light'))
     menu.add_cascade(label="Theme", menu=theme)
     theme['bg'] = 'black'
     theme['fg'] = 'white'
@@ -124,21 +169,21 @@ if __name__ == '__main__':
     about['activeforeground'] = 'black'
     root.config(menu=menu)
 
+    # Scrollbar
+    scroll = Scrollbar(root)
+    scroll.pack(side="right", fill=Y)
+
     #Editor Box
-    editBox = Text(root, font=("lucida", 18), spacing1=15)
-    editBox.pack(fill=BOTH, expand=True)
-    editBox['bg'] = 'black'
-    editBox['fg'] = 'white'
+    editBox = Text(root, font=("lucida", 18), spacing1=15, relief="solid", yscrollcommand=scroll.set)
+    editBox.pack(fill=BOTH, padx=(18, 5), ipadx=15)
+    editBox['bg'] = '#161B21'
+    editBox['fg'] = '#FFFFFF'
     editBox['insertbackground'] = 'white'
-
-    # editBox.bind("<Return>", lambda event: indexer('enter'))
-    # editBox.bind("<space>", editting)
     editBox.bind("<Key>", editting)
+    # Add scroll command
+    scroll.configure(command=editBox.yview)
 
-
-    openFile()
-
-
+    # openFile()
 
 
     root.mainloop()
