@@ -1,10 +1,10 @@
-import os
 from tkinter import *
 from tkinter import messagebox, filedialog
 import json
 
-# Globals
-parantises = ['(', ')', '{', '}', '[', ']', '<', '>']
+# Global
+# parantises = ['(', ')', '{', '}', '[', ']', '<', '>']
+current_dir = r"c:/documents"
 
 
 def editor(event):
@@ -12,14 +12,25 @@ def editor(event):
 
 
 # Menu Functions
-def open_file():
+def new_file(event):
+    confirm = messagebox.askyesno("Open New File", "Click yes if older file is saved")
+    if confirm:
+        global current_dir
+        current_dir = r"c:/documents"
+        editBox.delete(1.0, END)
+        root.title(' THE_ARYA | New File')
+
+
+def open_file(event):
+    global current_dir
     file_ptr = filedialog.askopenfile(mode='r', filetypes=[('All Files', '*.*')],
-                                      initialdir=os.getcwd(), title="Open a file | THE_ARYA")
+                                      initialdir=current_dir, title="Open a file | THE_ARYA")
     if file_ptr:
+        current_dir = file_ptr.name
         index = 1
-        name = file_ptr.name.split("/")[-1]
-        file_type = name.split(".")[1]
-        root.title("  "+name)
+        name = current_dir.split("/")[-1]
+        file_type = name.split(".")[-1]
+        root.title(" "+name)
         editBox.delete(0.0, END)
 
         # Get the keyword list
@@ -92,16 +103,31 @@ def open_file():
                     i += 1
 
             index += 1
-
         file_ptr.close()
 
 
-def save_file():
-    pass
+def save_file(event):
+    save_confirm = messagebox.askyesno("Save the file", "Are you sure you want to save this file.")
+    if save_confirm:
+        global current_dir
+        try:
+            with open(current_dir, "w") as f:
+                f.write(editBox.get(1.0, END))
+                f.close()
+            root.title(f"  {current_dir.split('/')[-1]} --- Modified and Saved")
+        except PermissionError:
+            save_file_as("e")
+        
 
-
-def save_file_as():
-    pass
+def save_file_as(event):
+    global current_dir
+    file_ptr = filedialog.asksaveasfile(filetypes=[('All Files', '*.*')],
+                                        initialdir=current_dir, title="Save file as | THE_ARYA")
+    if file_ptr:
+        current_dir = file_ptr.name
+        root.title(f"  {current_dir.split('/')[-1]}")
+        file_ptr.write(editBox.get(1.0, END))
+        file_ptr.close()
 
 
 def theme_set(theme_name):
@@ -137,7 +163,7 @@ if __name__ == '__main__':
     root.geometry('1200x750+200+30')
     # root.geometry('500x500')
     root.resizable(True, True)
-    root.title('   codeEditor | THE_ARYA')
+    root.title(' THE_ARYA | New File')
     icon = PhotoImage(file="codeEditorIcon.png")
     root.iconphoto(False, icon)
     root['bg'] = '#161B21'
@@ -146,9 +172,10 @@ if __name__ == '__main__':
     menu = Menu(root)
 
     file = Menu(menu, tearoff=False)
-    file.add_command(label="Open", command=open_file)
-    file.add_command(label="Save", command=save_file)
-    file.add_command(label="Save As", command=save_file_as)
+    file.add_command(label="New", command=lambda: new_file("e"), accelerator="(ctrl+N)")
+    file.add_command(label="Open", command=lambda: open_file("e"), accelerator="(ctrl+O)")
+    file.add_command(label="Save", command=lambda: save_file("e"), accelerator="(ctrl+S)")
+    file.add_command(label="Save As", command=lambda: save_file_as("e"), accelerator="(ctrl+shift+N)")
     menu.add_cascade(label="File", menu=file)
     file['bg'] = 'black'
     file['fg'] = 'white'
@@ -157,9 +184,9 @@ if __name__ == '__main__':
 
     theme = Menu(menu, tearoff=False)
     theme.add_radiobutton(label="Dark", selectcolor="blue", variable='theme',
-                          value='dark', command=lambda: theme_set('dark'))
+                          value=1, command=lambda: theme_set('dark'))
     theme.add_radiobutton(label="light", selectcolor="blue", variable='theme',
-                          value='light', command=lambda: theme_set('light'))
+                          value=0, command=lambda: theme_set('light'))
     menu.add_cascade(label="Theme", menu=theme)
     theme['bg'] = 'black'
     theme['fg'] = 'white'
@@ -182,7 +209,7 @@ if __name__ == '__main__':
     scrollx.pack(side="bottom", fill=X)
 
     # Editor Box
-    editBox = Text(root, font=("lucida", 18), spacing1=15, relief="solid",
+    editBox = Text(root, font=("lucida", 18), spacing1=15, relief="solid", undo=True,
                    yscrollcommand=scrolly.set, xscrollcommand=scrollx.set)
     editBox.pack(fill=BOTH, expand=True, padx=(18, 0), ipadx=15)
     editBox['bg'] = '#161B21'
@@ -193,5 +220,15 @@ if __name__ == '__main__':
     scrolly.configure(command=editBox.yview)
     scrollx.configure(command=editBox.xview)
 
-    # openFile()
+    # Save file shortcut
+    root.bind("<Control-n>", new_file)
+    root.bind("<Control-o>", open_file)
+    root.bind("<Control-s>", save_file)
+    root.bind("<Control-Shift-S>", save_file_as)
+    root.bind("<Control-z>", lambda e: editBox.edit_undo)
+    root.bind("<Control-y>", lambda e: editBox.edit_redo)
+
     root.mainloop()
+
+
+
