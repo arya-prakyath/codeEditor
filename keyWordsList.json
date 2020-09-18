@@ -33,12 +33,10 @@
                "void",
                "volatile",
                "while",
-               "printf",
-               "scanf",
                "NULL"
           ],
           "comments": [
-               "//",
+               "/",
                "#"
           ]
      },
