@@ -91,7 +91,6 @@ def open_file():
                 else:
                     i += 1
 
-
             index += 1
 
         file_ptr.close()
