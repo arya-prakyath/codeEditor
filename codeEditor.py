@@ -220,7 +220,7 @@ if __name__ == '__main__':
     scrolly.configure(command=editBox.yview)
     scrollx.configure(command=editBox.xview)
 
-    # Shortcut
+    # Shortcuts
     root.bind("<Control-n>", new_file)
     root.bind("<Control-o>", open_file)
     root.bind("<Control-s>", save_file)
