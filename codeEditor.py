@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import messagebox, filedialog
 import json
 
-# Global
+# Globals
 # parantises = ['(', ')', '{', '}', '[', ']', '<', '>']
 current_dir = r"c:/documents"
 
