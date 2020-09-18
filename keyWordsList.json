@@ -33,7 +33,6 @@
                "void",
                "volatile",
                "while",
-               "while",
                "NULL"
           ],
           "comments": [
