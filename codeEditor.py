@@ -64,14 +64,14 @@ def openFile():
                 start = editBox.search(f'{key}[\s|:|\\n]', index=i, regexp=True, forwards=True, stopindex=END)
                 if start != "":
                     word = editBox.get(start, start + " wordend")
-                    startDeci = start.split('.')[-1]
-                    start = float(start)
-                    end = int(start) + float("0."+str(int(startDeci) + len(word)))
+                    startInt = start.split('.')[0]
+                    startDeci = int(start.split('.')[-1])
+                    end = startInt + "." + str(startDeci + len(word))
                     editBox.tag_configure("keyword", foreground="#2F3C7E")
-                    editBox.tag_remove("string", str(start), format(end, '.2f'))
-                    editBox.tag_remove("functions", str(start), format(end, '.2f'))
-                    editBox.tag_add("keyword", str(start), float(format(end, '.2f')))
-
+                    editBox.tag_remove("string", start, end)
+                    editBox.tag_remove("functions", start, end)
+                    editBox.tag_add("keyword", start, end)
+                    print(f"{word} -- > {start} - {end}")
             index += 1
         filePtr.close()
 
