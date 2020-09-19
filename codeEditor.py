@@ -6,7 +6,8 @@ import json
 # parantises = ['(', ')', '{', '}', '[', ']', '<', '>']
 current_dir = r"c:/documents"
 global key_words, comment_line
-
+key_words = ""
+comment_line = ""
 
 # Menu Functions
 def new_file(event):
@@ -47,6 +48,11 @@ def open_file(event):
 
             # Check if line is a comment
             try:
+                if (file_type == "html" or file_type == "html") and line.lstrip()[0]+line.lstrip()[1] in comment_line:
+                    editBox.tag_configure("comments", foreground="#EC8B5E", selectforeground='#000000')
+                    editBox.tag_add("comments", index + 0.0, "current")
+                    index += 1
+                    continue
                 if line.lstrip()[0] in comment_line:
                     editBox.tag_configure("comments", foreground="#EC8B5E", selectforeground='#000000')
                     editBox.tag_add("comments", index + 0.0, "current")
