@@ -1,118 +1,238 @@
 {
-     "c": {
-          "keywords": [
-               "auto",
-               "break",
-               "case",
-               "char",
-               "const",
-               "continue",
-               "default",
-               "do",
-               "double",
-               "else",
-               "enum",
-               "extern",
-               "float",
-               "for",
-               "goto",
-               "if",
-               "int",
-               "long",
-               "register",
-               "return",
-               "short",
-               "signed",
-               "sizeof",
-               "static",
-               "struct",
-               "switch",
-               "typedef",
-               "union",
-               "unsigned",
-               "void",
-               "volatile",
-               "while",
-               "NULL"
-          ],
-          "comments": [
-               "/",
-               "#"
-          ]
-     },
-     "py": {
-          "keywords": [
-               "__main__",
-               "from",
-               "import",
-               "with",
-               "as",
-               "global",
-               "nonlocal",
-               "True",
-               "False",
-               "None",
-               "and",
-               "or",
-               "not",
-               "in",
-               "is",
-               "if",
-               "else",
-               "elif",
-               "for",
-               "while",
-               "break",
-               "continue",
-               "def",
-               "lambda",
-               "return",
-               "try",
-               "except",
-               "finally",
-               "raise",
-               "class",
-               "yield",
-               "pass",
-               "assert",
-               "await",
-               "async"
-          ],
-          "comments": [
-               "#",
-               "'"
-          ]
-     },
-     "txt": {
-          "keywords": [],
-          "comments": []
-     },
-     "html": {
-          "keywords": [],
-          "comments": [
-               "<!--"
-          ]
-     },
-     "css": {
-          "keywords": [],
-          "comments": [
-               "//"
-          ]
-     },
-     "php": {
-          "keywords": [],
-          "comments": [
-               "//"
-          ]
-     },
-     "js": {
-          "keywords": [],
-          "comments": [
-               "//"
-          ]
-     },
-     "json" : {
-          "keywords": [],
-          "comments": []
-     }
+   "c": {
+      "keywords": [
+         "auto",
+         "break",
+         "case",
+         "char",
+         "const",
+         "continue",
+         "default",
+         "do",
+         "double",
+         "else",
+         "enum",
+         "extern",
+         "float",
+         "for",
+         "goto",
+         "if",
+         "int",
+         "long",
+         "register",
+         "return",
+         "short",
+         "signed",
+         "sizeof",
+         "static",
+         "struct",
+         "switch",
+         "typedef",
+         "union",
+         "unsigned",
+         "void",
+         "volatile",
+         "while",
+         "NULL"
+      ],
+      "comments": [
+         "/",
+         "#"
+      ]
+   },
+   "py": {
+      "keywords": [
+         "__main__",
+         "from",
+         "import",
+         "with",
+         "as",
+         "global",
+         "nonlocal",
+         "True",
+         "False",
+         "None",
+         "and",
+         "or",
+         "not",
+         "in",
+         "is",
+         "if",
+         "else",
+         "elif",
+         "for",
+         "while",
+         "break",
+         "continue",
+         "def",
+         "lambda",
+         "return",
+         "try",
+         "except",
+         "finally",
+         "raise",
+         "class",
+         "yield",
+         "pass",
+         "assert",
+         "await",
+         "async"
+      ],
+      "comments": [
+         "#",
+         "'"
+      ]
+   },
+   "txt": {
+      "keywords": [
+         "NULL"
+      ],
+      "comments": [
+         "--"
+      ]
+   },
+   "html": {
+      "keywords": [
+         "<a",
+         "<abbr",
+         "<acronym",
+         "<address",
+         "<applet",
+         "<area",
+         "<article",
+         "<aside",
+         "<audio",
+         "<b",
+         "<base",
+         "<bdi",
+         "<bdo",
+         "<big",
+         "<blockquote",
+         "<bofy",
+         "<br",
+         "<button",
+         "<canvas",
+         "<caption",
+         "<cite",
+         "<code",
+         "<col",
+         "<colgroup",
+         "<data",
+         "<datalist",
+         "<dd",
+         "<del",
+         "<details",
+         "<dfn",
+         "<dialog",
+         "<div",
+         "<dl",
+         "<dt",
+         "<em",
+         "<embed",
+         "<fieldset",
+         "<figcaption",
+         "<figure",
+         "<footer",
+         "<form",
+         "<h1",
+         "<h2",
+         "<h3",
+         "<h4",
+         "<h5",
+         "<h6",
+         "<head",
+         "<header",
+         "<hr",
+         "<html",
+         "<i",
+         "<iframe",
+         "<img",
+         "<input",
+         "<ins",
+         "<kbd",
+         "<label",
+         "<legend",
+         "<li",
+         "<link",
+         "<main",
+         "<map",
+         "<mark",
+         "<meta",
+         "<meter",
+         "<nav",
+         "<noscript",
+         "<object",
+         "<ol",
+         "<optgroup",
+         "<option",
+         "<output",
+         "<p",
+         "<param",
+         "<picture",
+         "<pre",
+         "<progress",
+         "<q",
+         "<rp",
+         "<rt",
+         "<ruby",
+         "<s",
+         "<samp",
+         "<script",
+         "<section",
+         "<select",
+         "<small",
+         "<source",
+         "<span",
+         "<strong",
+         "<style",
+         "<sub",
+         "<summary",
+         "<sup",
+         "<svg",
+         "<table",
+         "<tbody",
+         "<td",
+         "<template",
+         "<textarea",
+         "<tfoot",
+         "<th",
+         "<thead",
+         "<time",
+         "<title",
+         "<tr",
+         "<track",
+         "<u",
+         "<ul",
+         "<var",
+         "<video",
+         "<wbr"
+      ],
+      "comments": [
+         "<!"
+      ]
+   },
+   "css": {
+      "keywords": [],
+      "comments": [
+         "/"
+      ]
+   },
+   "php": {
+      "keywords": [],
+      "comments": [
+         "/"
+      ]
+   },
+   "js": {
+      "keywords": [],
+      "comments": [
+         "/"
+      ]
+   },
+   "json": {
+      "keywords": [],
+      "comments": [
+         "/"
+      ]
+   }
 }
