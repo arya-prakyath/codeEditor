@@ -5,10 +5,7 @@ import json
 # Globals
 # parantises = ['(', ')', '{', '}', '[', ']', '<', '>']
 current_dir = r"c:/documents"
-
-
-def editor(event):
-    pass
+global key_words, comment_line
 
 
 # Menu Functions
@@ -35,6 +32,7 @@ def open_file(event):
 
         # Get the keyword list
         with open("keyWordsList.json", "r") as keyJson:
+            global key_words, comment_line
             json_list = keyJson.read()
             json_list = json.loads(json_list)
             key_words = json_list[file_type]["keywords"]
@@ -50,7 +48,7 @@ def open_file(event):
             # Check if line is a comment
             try:
                 if line.lstrip()[0] in comment_line:
-                    editBox.tag_configure("comments", foreground="#EC8B5E")
+                    editBox.tag_configure("comments", foreground="#EC8B5E", selectforeground='#000000')
                     editBox.tag_add("comments", index + 0.0, "current")
                     index += 1
                     continue
@@ -67,7 +65,6 @@ def open_file(event):
                             j -= 1
                         start = str(index) + '.' + str(j + 1)
                         end = str(index) + '.' + str(i)
-                        editBox.tag_configure("functions", foreground="yellow")
                         editBox.tag_add("functions", start, end)
                 i += 1
 
@@ -81,7 +78,6 @@ def open_file(event):
                     start_int = start.split('.')[0]
                     start_deci = int(start.split('.')[-1])
                     end = start_int + "." + str(start_deci + len(word))
-                    editBox.tag_configure("keywords", foreground="#2F3C7E")
                     editBox.tag_remove("functions", start, end)
                     editBox.tag_add("keywords", start, end)
 
@@ -94,7 +90,6 @@ def open_file(event):
                         j += 1
                     start = str(index) + '.' + str(i)
                     end = str(index) + '.' + str(j+1)
-                    editBox.tag_configure("strings", foreground="#FFE67C")
                     editBox.tag_remove("functions", start, end)
                     editBox.tag_remove("keywords", start, end)
                     editBox.tag_add("strings", start, end)
@@ -132,16 +127,18 @@ def save_file_as(event):
 
 def theme_set(theme_name):
     if theme_name == "light":
-        editBox.tag_configure("functions", foreground="blue")
-        editBox.tag_configure("keywords", foreground="#EE4E34")
-        editBox.tag_configure("strings", foreground="#295F2D")
+        editBox.tag_configure("functions", foreground="blue", selectforeground='#000000')
+        editBox.tag_configure("keywords", foreground="#EE4E34", selectforeground='#000000')
+        editBox.tag_configure("strings", foreground="#295F2D", selectforeground='#000000')
+        editBox.tag_configure("fg", foreground="black", selectforeground='#000000')
         editBox['bg'] = 'light blue'
         editBox['fg'] = 'black'
         editBox['insertbackground'] = 'black'
     else:
-        editBox.tag_configure("functions", foreground="yellow")
-        editBox.tag_configure("keywords", foreground="#2F3C7E")
-        editBox.tag_configure("strings", foreground="#FFE67C")
+        editBox.tag_configure("functions", foreground="yellow", selectforeground='#000000')
+        editBox.tag_configure("keywords", foreground="#2F3C7E", selectforeground='#000000')
+        editBox.tag_configure("strings", foreground="#FFE67C", selectforeground='#000000')
+        editBox.tag_configure("fg", foreground="white", selectforeground='#000000')
         editBox['bg'] = '#161B21'
         editBox['fg'] = 'white'
         editBox['insertbackground'] = 'white'
@@ -153,15 +150,50 @@ def about_app():
                                                    "C++ files\n\n NO ERROR DETECTION SUPPORT")
 
 
-def editing():
-    pass
+def editing(event):
+    global key_words
+    current_pos = editBox.index(INSERT)
+    line = editBox.get(current_pos.split(".")[0]+".0", current_pos)
+    j = int(current_pos.split(".")[-1]) - 1
+
+    # Check for functions
+    global func
+    func = False
+    try:
+        if j < len(line) and line[j] == "(":
+            j -= 1
+            while j >= 0 and (line[j].isalnum() or line[j] == "_" or line[j] == "."):
+                j -= 1
+            editBox.tag_remove("fg", current_pos.split(".")[0]+"."+str(j), current_pos.split(".")[0]+"."+str(int(current_pos.split(".")[-1])-1))
+            editBox.tag_add("functions", current_pos.split(".")[0]+"."+str(j), current_pos.split(".")[0]+"."+str(int(current_pos.split(".")[-1])-1))
+            func = True
+    except IndexError:
+        pass
+
+    # Check for keywords
+    j = int(current_pos.split(".")[-1]) - 1
+    while j >= 0 and line[j] != " ":
+        j -= 1
+    word = editBox.get(current_pos.split(".")[0]+"."+str(j+1), current_pos)
+    print(word)
+    if word in key_words:
+        print("Yes")
+        print(current_pos.split(".")[0]+"."+str(j+1), current_pos)
+        editBox.tag_remove("fg", current_pos.split(".")[0]+"."+str(j+1), current_pos)
+        editBox.tag_remove("functions", current_pos.split(".")[0]+"."+str(j+1), current_pos)
+        editBox.tag_add("keywords", current_pos.split(".")[0]+"."+str(j+1), current_pos)
+    else:
+        if not func:
+            print("NO")
+            editBox.tag_remove("functions", current_pos.split(".")[0]+"."+str(j+1), current_pos)
+            editBox.tag_add("fg", current_pos.split(".")[0]+"."+str(j+1), current_pos)
 
 
 if __name__ == '__main__':
     # Initial window setup
     root = Tk()
-    root.geometry('1200x750+200+30')
-    # root.geometry('500x500')
+    # root.geometry('1200x750+200+30')
+    root.geometry('500x500')
     root.resizable(True, True)
     root.title(' THE_ARYA | New File')
     icon = PhotoImage(file="codeEditorIcon.png")
@@ -208,19 +240,27 @@ if __name__ == '__main__':
     scrollx = Scrollbar(root, orient=HORIZONTAL)
     scrollx.pack(side="bottom", fill=X)
 
+
     # Editor Box
     editBox = Text(root, font=("lucida", 18), spacing1=15, relief="solid", undo=True,
                    yscrollcommand=scrolly.set, xscrollcommand=scrollx.set)
     editBox.pack(fill=BOTH, expand=True, padx=(18, 0), ipadx=15)
+    editBox.tag_configure("highlight", background="black")
     editBox['bg'] = '#161B21'
     editBox['fg'] = '#FFFFFF'
     editBox['insertbackground'] = 'white'
+    editBox['selectbackground'] = '#F0E68C'
+    editBox['selectforeground'] = '#000000'
     # editBox.bind("<Key>", editing)
     # Add scroll command
     scrolly.configure(command=editBox.yview)
     scrollx.configure(command=editBox.xview)
 
+    # Call default dark theme
+    theme_set('dark')
+
     # Shortcuts
+    editBox.bind("<KeyRelease>", editing)
     root.bind("<Control-n>", new_file)
     root.bind("<Control-o>", open_file)
     root.bind("<Control-s>", save_file)
@@ -229,3 +269,5 @@ if __name__ == '__main__':
     root.bind("<Control-y>", lambda e: editBox.edit_redo)
 
     root.mainloop()
+
+
