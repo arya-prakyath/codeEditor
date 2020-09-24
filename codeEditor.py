@@ -77,13 +77,19 @@ def open_file(event):
             # Check for keywords
             for key in key_words:
                 i = index + 0.0
-                start = editBox.search(rf'{key}[\s:{{\n;(]', index=i, regexp=True,
+                start = editBox.search(rf'{key}[\s:{{\n;(>]', index=i, regexp=True,
                                        forwards=True, stopindex=END)
                 if start != "":
                     word = editBox.get(start, start + " wordend")
                     start_int = start.split('.')[0]
                     start_deci = int(start.split('.')[-1])
-                    end = start_int + "." + str(start_deci + len(word))
+                    if word == "<":
+                        i = start_deci
+                        while i < len(line)-1 and line[i] != " " and line[i] != ">":
+                            i += 1
+                        end = start_int + "." + str(i+1)
+                    else:
+                        end = start_int + "." + str(start_deci + len(word))
                     editBox.tag_remove("functions", start, end)
                     editBox.tag_add("keywords", start, end)
 
@@ -128,6 +134,13 @@ def save_file_as(event):
         current_dir = file_ptr.name
         root.title(f"  {current_dir.split('/')[-1]}")
         file_ptr.write(editBox.get(1.0, END))
+        with open("keyWordsList.json", "r") as keyJson:
+            global key_words, comment_line
+            json_list = keyJson.read()
+            json_list = json.loads(json_list)
+            key_words = json_list[file_type]["keywords"]
+            comment_line = json_list[file_type]["comments"]
+        keyJson.close()
         file_ptr.close()
 
 
@@ -181,16 +194,18 @@ def editing(event):
     while j >= 0 and line[j] != " ":
         j -= 1
     word = editBox.get(current_pos.split(".")[0]+"."+str(j+1), current_pos)
-    print(word)
+    htm = int(current_pos.split(".")[-1]) - 1
+    try:
+        if line[htm] == ">":
+            word = editBox.get(current_pos.split(".")[0]+"."+str(j+1), current_pos.split(".")[0]+"."+str(htm))
+    except Exception:
+        pass
     if word in key_words:
-        print("Yes")
-        print(current_pos.split(".")[0]+"."+str(j+1), current_pos)
         editBox.tag_remove("fg", current_pos.split(".")[0]+"."+str(j+1), current_pos)
         editBox.tag_remove("functions", current_pos.split(".")[0]+"."+str(j+1), current_pos)
         editBox.tag_add("keywords", current_pos.split(".")[0]+"."+str(j+1), current_pos)
     else:
         if not func:
-            print("NO")
             editBox.tag_remove("functions", current_pos.split(".")[0]+"."+str(j+1), current_pos)
             editBox.tag_add("fg", current_pos.split(".")[0]+"."+str(j+1), current_pos)
 
