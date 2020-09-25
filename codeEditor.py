@@ -1,13 +1,13 @@
 from tkinter import *
-from tkinter import messagebox, filedialog
+from tkinter import messagebox, filedialog, ttk
 import json
 
 # Globals
-# parantises = ['(', ')', '{', '}', '[', ']', '<', '>']
 current_dir = r"c:/documents"
 global key_words, comment_line
 key_words = ""
 comment_line = ""
+imageTypes = ['jpeg', 'jpg', 'png', 'ico', 'gif']
 
 # Menu Functions
 def new_file(event):
@@ -25,37 +25,60 @@ def open_file(event):
                                       initialdir=current_dir, title="Open a file | THE_ARYA")
     if file_ptr:
         current_dir = file_ptr.name
-        index = 1
         name = current_dir.split("/")[-1]
         file_type = name.split(".")[-1]
-        root.title(" "+name)
-        editBox.delete(0.0, END)
+
+        # Check if Image file
+        if file_type in imageTypes:
+            try:
+                editBox["image"] = current_dir
+                editBox.delete(0.0, END)
+                for record in lineNo.get_children():
+                    lineNo.delete(record)
+                root.title(" " + name)
+                return
+            except Exception:
+                messagebox.showerror(f"\tUnsupported Image type",
+                                     f"This image is not supported try {', '.join(imageTypes)}")
+                return
 
         # Get the keyword list
         with open("keyWordsList.json", "r") as keyJson:
             global key_words, comment_line
             json_list = keyJson.read()
             json_list = json.loads(json_list)
-            key_words = json_list[file_type]["keywords"]
-            comment_line = json_list[file_type]["comments"]
+            try:
+                key_words = json_list[file_type]["keywords"]
+                comment_line = json_list[file_type]["comments"]
+            except KeyError:
+                messagebox.showerror("\tUnsupported file type", "Goto 'About' Menu to look at the supported file types.")
+                return
         keyJson.close()
+
+        for record in lineNo.get_children():
+            lineNo.delete(record)
+        index = 1
+        name = current_dir.split("/")[-1]
+        root.title(" "+name)
+        editBox.delete(0.0, END)
 
         # Access line... one at a time
         for line in file_ptr.readlines():
+            # print(line.split(' '))
             editBox.insert(END, line)
-            # Call editor
-            # editor()
 
             # Check if line is a comment
             try:
                 if (file_type == "html" or file_type == "html") and line.lstrip()[0]+line.lstrip()[1] in comment_line:
                     editBox.tag_configure("comments", foreground="#EC8B5E", selectforeground='#000000')
                     editBox.tag_add("comments", index + 0.0, "current")
+                    lineNo.insert("", index, values=(index,))
                     index += 1
                     continue
                 if line.lstrip()[0] in comment_line:
                     editBox.tag_configure("comments", foreground="#EC8B5E", selectforeground='#000000')
                     editBox.tag_add("comments", index + 0.0, "current")
+                    lineNo.insert("", index, values=(index,))
                     index += 1
                     continue
             except IndexError:
@@ -109,6 +132,7 @@ def open_file(event):
                 else:
                     i += 1
 
+            lineNo.insert("", index, values=(index,))
             index += 1
         file_ptr.close()
 
@@ -124,7 +148,7 @@ def save_file(event):
             root.title(f"  {current_dir.split('/')[-1]} --- Modified and Saved")
         except PermissionError:
             save_file_as("e")
-        
+
 
 def save_file_as(event):
     global current_dir
@@ -134,13 +158,13 @@ def save_file_as(event):
         current_dir = file_ptr.name
         root.title(f"  {current_dir.split('/')[-1]}")
         file_ptr.write(editBox.get(1.0, END))
+        # Get the keyword list
         with open("keyWordsList.json", "r") as keyJson:
             global key_words, comment_line
             json_list = keyJson.read()
             json_list = json.loads(json_list)
-            key_words = json_list[file_type]["keywords"]
-            comment_line = json_list[file_type]["comments"]
-        keyJson.close()
+            key_words = json_list[current_dir.split('.')[-1]]["keywords"]
+            comment_line = json_list[current_dir.split('.')[-1]]["comments"]
         file_ptr.close()
 
 
@@ -172,26 +196,26 @@ def about_app():
 def editing(event):
     global key_words
     current_pos = editBox.index(INSERT)
-    line = editBox.get(current_pos.split(".")[0]+".0", current_pos)
+    line = editBox.get(current_pos.split(".")[0]+".0", current_pos+" lineend")
     j = int(current_pos.split(".")[-1]) - 1
 
     # Check for functions
     global func
     func = False
-    try:
-        if j < len(line) and line[j] == "(":
+    if len(line) and line[j] == "(":
+        j -= 1
+        while j >= 0 and (line[j].isalnum() or line[j] == "_" or line[j] == "."):
             j -= 1
-            while j >= 0 and (line[j].isalnum() or line[j] == "_" or line[j] == "."):
-                j -= 1
-            editBox.tag_remove("fg", current_pos.split(".")[0]+"."+str(j), current_pos.split(".")[0]+"."+str(int(current_pos.split(".")[-1])-1))
-            editBox.tag_add("functions", current_pos.split(".")[0]+"."+str(j), current_pos.split(".")[0]+"."+str(int(current_pos.split(".")[-1])-1))
+        editBox.tag_remove("fg", current_pos.split(".")[0]+"."+str(j), current_pos.split(".")[0]+"."+str(int(current_pos.split(".")[-1])-1))
+        editBox.tag_add("functions", current_pos.split(".")[0]+"."+str(j), current_pos.split(".")[0]+"."+str(int(current_pos.split(".")[-1])-1))
+        func = True
+    else:
+        if "(" in line:
             func = True
-    except IndexError:
-        pass
 
     # Check for keywords
     j = int(current_pos.split(".")[-1]) - 1
-    while j >= 0 and line[j] != " ":
+    while j >= 0 and line[j] != " " and line[j] != "\t":
         j -= 1
     word = editBox.get(current_pos.split(".")[0]+"."+str(j+1), current_pos)
     htm = int(current_pos.split(".")[-1]) - 1
@@ -206,15 +230,30 @@ def editing(event):
         editBox.tag_add("keywords", current_pos.split(".")[0]+"."+str(j+1), current_pos)
     else:
         if not func:
+            editBox.tag_remove("keywords", current_pos.split(".")[0]+"."+str(j+1), current_pos)
             editBox.tag_remove("functions", current_pos.split(".")[0]+"."+str(j+1), current_pos)
             editBox.tag_add("fg", current_pos.split(".")[0]+"."+str(j+1), current_pos)
 
 
+def scroll_bar_check():
+    try:
+        a, b, c, d = ebscrolly.get()
+    except Exception:
+        x, y = ebscrolly.get()
+        lineNo.yview_moveto(str(x))
+    threading.Timer(0.01, scroll_bar_check).start()
+
+
+# def tabbing(event):
+#     editBox.insert(editBox.index(INSERT), "   ")
+
+
 if __name__ == '__main__':
+    import threading
     # Initial window setup
     root = Tk()
-    # root.geometry('1200x750+200+30')
-    root.geometry('500x500')
+    root.geometry('1200x750+200+30')
+    # root.geometry('500x500')
     root.resizable(True, True)
     root.title(' THE_ARYA | New File')
     icon = PhotoImage(file="codeEditorIcon.png")
@@ -228,7 +267,7 @@ if __name__ == '__main__':
     file.add_command(label="New", command=lambda: new_file("e"), accelerator="(ctrl+N)")
     file.add_command(label="Open", command=lambda: open_file("e"), accelerator="(ctrl+O)")
     file.add_command(label="Save", command=lambda: save_file("e"), accelerator="(ctrl+S)")
-    file.add_command(label="Save As", command=lambda: save_file_as("e"), accelerator="(ctrl+shift+N)")
+    file.add_command(label="Save As", command=lambda: save_file_as("e"), accelerator="(ctrl+sft+S)")
     menu.add_cascade(label="File", menu=file)
     file['bg'] = 'black'
     file['fg'] = 'white'
@@ -255,27 +294,39 @@ if __name__ == '__main__':
     about['activeforeground'] = 'black'
     root.config(menu=menu)
 
+    main = Frame(root)
+    main.pack(fill=BOTH, expand=True)
+
     # Scrollbar
-    scrolly = Scrollbar(root, orient=VERTICAL)
-    scrolly.pack(side="right", fill=Y)
-    scrollx = Scrollbar(root, orient=HORIZONTAL)
-    scrollx.pack(side="bottom", fill=X)
+    lnscrolly = Scrollbar(main, orient=VERTICAL)
+    ebscrolly = Scrollbar(main, orient=VERTICAL)
+    ebscrolly.pack(side="right", fill=Y)
+
+    # Line number
+    lineNo = ttk.Treeview(main, yscrollcommand=lnscrolly.set)
+    lineNo.pack(side="left", fill=Y)
+    lineNo["columns"] = ("1",)
+    lineNo["show"] = ""
+    lineNo.column("1", width=55, anchor=N)
+    s = ttk.Style()
+    s.theme_use("clam")
+    s.configure("Treeview", rowheight=48, background="#161B21", foreground='white', fieldbackground='#161B21', border=SOLID)
+    s.map("Treeview", background=[('selected', "white")], foreground=[('selected', "black")])
 
 
     # Editor Box
-    editBox = Text(root, font=("lucida", 18), spacing1=15, relief="solid", undo=True,
-                   yscrollcommand=scrolly.set, xscrollcommand=scrollx.set)
-    editBox.pack(fill=BOTH, expand=True, padx=(18, 0), ipadx=15)
+    editBox = Text(main, font=("lucida", 18), pady=15, relief="solid", undo=True, yscrollcommand=ebscrolly.set)
+    editBox.pack(fill=BOTH, expand=True, ipadx=15)
     editBox.tag_configure("highlight", background="black")
     editBox['bg'] = '#161B21'
     editBox['fg'] = '#FFFFFF'
     editBox['insertbackground'] = 'white'
     editBox['selectbackground'] = '#F0E68C'
     editBox['selectforeground'] = '#000000'
-    # editBox.bind("<Key>", editing)
+
     # Add scroll command
-    scrolly.configure(command=editBox.yview)
-    scrollx.configure(command=editBox.xview)
+    lnscrolly.configure(command=lineNo.yview)
+    ebscrolly.configure(command=editBox.yview)
 
     # Call default dark theme
     theme_set('dark')
@@ -288,7 +339,20 @@ if __name__ == '__main__':
     root.bind("<Control-Shift-S>", save_file_as)
     root.bind("<Control-z>", lambda e: editBox.edit_undo)
     root.bind("<Control-y>", lambda e: editBox.edit_redo)
-
+    # editBox.bind("<Tab>", tabbing)
+    scroll_bar_check()
     root.mainloop()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
