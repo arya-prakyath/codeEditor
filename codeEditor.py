@@ -13,6 +13,9 @@ imageTypes = ['jpeg', 'jpg', 'png', 'ico', 'gif']
 def new_file(event):
     confirm = messagebox.askyesno("Open New File", "Click yes if older file is saved")
     if confirm:
+        lineNo["state"] = "normal"
+        lineNo.delete(1.0, END)
+        lineNo["state"] = "disabled"
         global current_dir
         current_dir = r"c:/documents"
         editBox.delete(1.0, END)
@@ -55,8 +58,9 @@ def open_file(event):
                 return
         keyJson.close()
 
-        for record in lineNo.get_children():
-            lineNo.delete(record)
+        lineNo["state"] = "normal"
+        lineNo.delete(1.0, END)
+        lineNo["state"] = "disabled"
         index = 1
         name = current_dir.split("/")[-1]
         root.title(" "+name)
@@ -72,13 +76,17 @@ def open_file(event):
                 if (file_type == "html" or file_type == "html") and line.lstrip()[0]+line.lstrip()[1] in comment_line:
                     editBox.tag_configure("comments", foreground="#EC8B5E", selectforeground='#000000')
                     editBox.tag_add("comments", index + 0.0, "current")
-                    lineNo.insert("", index, values=(index,))
+                    lineNo["state"] = "normal"
+                    lineNo.insert(END, str(index)+"\n")
+                    lineNo["state"] = "disabled"
                     index += 1
                     continue
                 if line.lstrip()[0] in comment_line:
                     editBox.tag_configure("comments", foreground="#EC8B5E", selectforeground='#000000')
                     editBox.tag_add("comments", index + 0.0, "current")
-                    lineNo.insert("", index, values=(index,))
+                    lineNo["state"] = "normal"
+                    lineNo.insert(END, str(index)+"\n")
+                    lineNo["state"] = "disabled"
                     index += 1
                     continue
             except IndexError:
@@ -132,7 +140,9 @@ def open_file(event):
                 else:
                     i += 1
 
-            lineNo.insert("", index, values=(index,))
+            lineNo["state"] = "normal"
+            lineNo.insert(END, str(index)+"\n")
+            lineNo["state"] = "disabled"
             index += 1
         file_ptr.close()
 
@@ -303,19 +313,13 @@ if __name__ == '__main__':
     ebscrolly.pack(side="right", fill=Y)
 
     # Line number
-    lineNo = ttk.Treeview(main, yscrollcommand=lnscrolly.set)
+    lineNo = Text(main, font=("lucida", 18), spacing1=20, padx=15, state="disabled", relief="solid", undo=True, yscrollcommand=ebscrolly.set, width=4, bg="black", fg="white")
     lineNo.pack(side="left", fill=Y)
-    lineNo["columns"] = ("1",)
-    lineNo["show"] = ""
-    lineNo.column("1", width=55, anchor=N)
-    s = ttk.Style()
-    s.theme_use("clam")
-    s.configure("Treeview", rowheight=48, background="#161B21", foreground='white', fieldbackground='#161B21', border=SOLID)
-    s.map("Treeview", background=[('selected', "white")], foreground=[('selected', "black")])
+
 
 
     # Editor Box
-    editBox = Text(main, font=("lucida", 18), pady=15, relief="solid", undo=True, yscrollcommand=ebscrolly.set)
+    editBox = Text(main, font=("lucida", 18), spacing1=20, padx=5, relief="solid", undo=True, yscrollcommand=ebscrolly.set)
     editBox.pack(fill=BOTH, expand=True, ipadx=15)
     editBox.tag_configure("highlight", background="black")
     editBox['bg'] = '#161B21'
@@ -340,6 +344,7 @@ if __name__ == '__main__':
     root.bind("<Control-z>", lambda e: editBox.edit_undo)
     root.bind("<Control-y>", lambda e: editBox.edit_redo)
     # editBox.bind("<Tab>", tabbing)
+    open_file("e")
     scroll_bar_check()
     root.mainloop()
 
