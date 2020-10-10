@@ -206,6 +206,7 @@ def about_app():
 def editing(event):
     global key_words
     current_pos = editBox.index(INSERT)
+
     line = editBox.get(current_pos.split(".")[0]+".0", current_pos+" lineend")
     j = int(current_pos.split(".")[-1]) - 1
 
@@ -252,10 +253,6 @@ def scroll_bar_check():
         x, y = ebscrolly.get()
         lineNo.yview_moveto(str(x))
     threading.Timer(0.01, scroll_bar_check).start()
-
-
-# def tabbing(event):
-#     editBox.insert(editBox.index(INSERT), "   ")
 
 
 if __name__ == '__main__':
@@ -347,17 +344,3 @@ if __name__ == '__main__':
     open_file("e")
     scroll_bar_check()
     root.mainloop()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
